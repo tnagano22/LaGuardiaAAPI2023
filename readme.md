@@ -49,22 +49,23 @@ addComma<-function(x) {format(x, big.mark = ',', trim = TRUE, scientific = FALSE
   - Choose “Enrollment Drilldown”
   - Choose “LaGuardia Community College” using the “College” filter
 - Summary
-  - The total student headcounts peaked at 20,231 in 2014 and started to
-    decline particularly after 2020 (probably due ot the pandemic). AAPI
-    students followed the same enrollment pattern and experienced a
-    steep decline after 2020.  
-  - “Asian or Pacific Islander” had the largest increase of 1,892
-    students from 1,406 students in 1990 to 3,298 in 2022, followed by
-    “Hispanic,” whose increase was 1,772.
-  - In terms of proportions, “Asian or Pacific Islander” accounts for
-    25.2% of the total student headcounts at LaGuardia Community College
-    in 2022. The proportion continued to increase even after 2020. In
-    other words, while there was a decline of “Asian or Pacific
-    Islander” after 2020, the rate of decline is not as steep as
-    students of other racial/ethnic backgrounds. As a consequence,
-    “Asian or Pacific Islander” students are represented more than
-    students from the other racial/ethnic backgrounds in the past few
-    years.
+  - The total number of students (headcounts) peaked in 2014, with a
+    headcount of 20,231. However, since then, the number has been
+    declining, particularly after 2020 (probably due ot the pandemic).
+    This decline in student enrollment is reflected among AAPI students,
+    as they have also experienced a sharp decrease after 2020.
+  - The AAPI student population at LaGuardia has seen the largest
+    increase in enrollment over the years. From 1990 to 2022, the number
+    of AAPI students rose from 1,406 to 3,298, an increase of 1,892.
+    Hispanic students also saw significant growth, with an increase of
+    1,772 during the same period.
+  - In terms of proportions, AAPI students accounted for 25.2% of the
+    total student headcount at LaGuardia in 2022. This proportion
+    continued to increase even after 2020. While there was a decline in
+    AAPI students after 2020, the rate of decline was not as steep as
+    students from other racial/ethnic backgrounds. As a result, AAPI
+    students are now more represented than students from other
+    racial/ethnic backgrounds in recent years.
 
 ``` r
 tempData <- read.csv("AHC2024CUNY_OAREDA_StudentDataBook2023.csv", sep = ",")
@@ -1613,9 +1614,835 @@ American Indian or Native American
 </tbody>
 </table>
 
+## Analyzing faculty and staff’s racial/ethnic diversity at LaGuardia Community College between 2020 and 2022
+
+- The data were obtained from CUNY’s Office of Recruitment and Diversity
+  (ORD) website
+  - <https://www.cuny.edu/about/administration/offices/hr/recruitment-diversity/statistics-and-reports/>
+  - See the “2020 to 2022 Three-Year Comparison of CUNY Workforce
+    Demographics” report at
+    <https://www.cuny.edu/wp-content/uploads/sites/4/media-assets/3-Year-Comparison-2020-to-2022-CUNY-Workforce-Demographics-1.pdf>
+  - LaGuardia’s data are on page 45
+  - Three different groups are analyzed
+    - Instructional staff: Full-time facutly and other instructional
+      staff, including substitutes, visiting titles and acting
+      appointments.
+    - Faculty: Full-time facutly
+    - HEO: Full-time HEO titles (a.k.a., staff)
+- Summary
+  - The representation of AAPI instructional staff in 2022 was only
+    16.6%, which slightly decreased from 16.9% in 2020. However, the
+    AAPI student body at LaGuardia increased from 24.0% in 2020 to 25.5%
+    in 2022.
+  - When looking at faculty data, which excludes full-time instructional
+    employees without a faculty appointment, the representation of AAPI
+    increases slightly to 18.4%. This is largely due to a lower
+    representation of Hispanic instructional employees with faculty
+    appointments, at just 13.1%.
+  - In terms of HEO titles (staff), only 14.2% of HEO titles were
+    occupied by AAPI individuals in 2022. Again, the representation of
+    AAPI staff has slightly decreased since 2020 when it was 15.2%. In
+    contrast, other minority groups such as Hispanic (33%) and Black
+    (25.4%) are better represented among the HEO titles.
+
 ``` r
-# xtabs(Headcount~Status + Year, thisData)
-# xtabs(Headcount~Race + Year, thisData)
-# thisData = melt(tempData,id=c("Year","Race"))
-# colnames(thisData) <- c("Year","Race","Status","Headcount")
+tempData <- read.csv("AHC2024CUNY_ORDInstructionalStaff.csv", skip = 0, sep = ",")
+
+tempData2 <- reshape2::melt(tempData, id.vars = c("Group", "Attribute"))
+levels(tempData2$variable) <- c("2020","2021","2022")
+tempData2$Group <- as.factor(tempData2$Group)
+tempData2$Attribute <- as.factor(tempData2$Attribute)
+names(tempData2) <- c("Group","Attribute","Year","Count")
 ```
+
+- Analyzing Instructional Staff (Fulltime only) data
+
+``` r
+tempData3 <- drop.levels(tempData2[tempData2$Group=="Instrucitonal Staff",],reorder=FALSE)
+tableRace.Inst = reshape2::dcast(tempData3, Year ~ Attribute, value.var = "Count")
+
+# double checking the total is accurate
+tableRace.Inst$sum = tableRace.Inst$White + tableRace.Inst$Hispanic + tableRace.Inst$Black + tableRace.Inst$`Asian or Pacific Islander` + tableRace.Inst$`American Indian or Native American` + tableRace.Inst$`Italian American` + tableRace.Inst$`Two or More Races`
+tableRace.Inst[,c("Year", "sum")]
+```
+
+    ##   Year sum
+    ## 1 2020 791
+    ## 2 2021 745
+    ## 3 2022 736
+
+``` r
+tableRaceNew.Inst = tableRace.Inst[,c("Year", "White","Hispanic","Black","Asian or Pacific Islander","American Indian or Native American","Italian American","Two or More Races","sum")]
+
+# print the table in HTML
+tableRaceNew.Inst %>% knitr::kable("html") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+<table class="table table-striped table-hover table-condensed" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Year
+</th>
+<th style="text-align:right;">
+White
+</th>
+<th style="text-align:right;">
+Hispanic
+</th>
+<th style="text-align:right;">
+Black
+</th>
+<th style="text-align:right;">
+Asian or Pacific Islander
+</th>
+<th style="text-align:right;">
+American Indian or Native American
+</th>
+<th style="text-align:right;">
+Italian American
+</th>
+<th style="text-align:right;">
+Two or More Races
+</th>
+<th style="text-align:right;">
+sum
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2020
+</td>
+<td style="text-align:right;">
+302
+</td>
+<td style="text-align:right;">
+161
+</td>
+<td style="text-align:right;">
+153
+</td>
+<td style="text-align:right;">
+134
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+36
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+791
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2021
+</td>
+<td style="text-align:right;">
+279
+</td>
+<td style="text-align:right;">
+159
+</td>
+<td style="text-align:right;">
+140
+</td>
+<td style="text-align:right;">
+128
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+34
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+745
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2022
+</td>
+<td style="text-align:right;">
+272
+</td>
+<td style="text-align:right;">
+169
+</td>
+<td style="text-align:right;">
+134
+</td>
+<td style="text-align:right;">
+122
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+736
+</td>
+</tr>
+</tbody>
+</table>
+
+``` r
+# calculating the proportion table
+tableRaceProportion.Inst = cbind(levels(tableRaceNew.Inst[,"Year"]),format(prop.table(data.matrix(tableRaceNew.Inst[,c("White","Hispanic","Black","Asian or Pacific Islander","American Indian or Native American","Italian American","Two or More Races")]),margin = 1)*100, digits=1))
+tableRaceProportion.Inst = as.data.table(tableRaceProportion.Inst)
+tableRaceProportion.Inst %>% knitr::kable("html") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+<table class="table table-striped table-hover table-condensed" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+V1
+</th>
+<th style="text-align:left;">
+White
+</th>
+<th style="text-align:left;">
+Hispanic
+</th>
+<th style="text-align:left;">
+Black
+</th>
+<th style="text-align:left;">
+Asian or Pacific Islander
+</th>
+<th style="text-align:left;">
+American Indian or Native American
+</th>
+<th style="text-align:left;">
+Italian American
+</th>
+<th style="text-align:left;">
+Two or More Races
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2020
+</td>
+<td style="text-align:left;">
+38.2
+</td>
+<td style="text-align:left;">
+20.4
+</td>
+<td style="text-align:left;">
+19.3
+</td>
+<td style="text-align:left;">
+16.9
+</td>
+<td style="text-align:left;">
+0.0
+</td>
+<td style="text-align:left;">
+4.6
+</td>
+<td style="text-align:left;">
+0.6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2021
+</td>
+<td style="text-align:left;">
+37.4
+</td>
+<td style="text-align:left;">
+21.3
+</td>
+<td style="text-align:left;">
+18.8
+</td>
+<td style="text-align:left;">
+17.2
+</td>
+<td style="text-align:left;">
+0.0
+</td>
+<td style="text-align:left;">
+4.6
+</td>
+<td style="text-align:left;">
+0.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2022
+</td>
+<td style="text-align:left;">
+37.0
+</td>
+<td style="text-align:left;">
+23.0
+</td>
+<td style="text-align:left;">
+18.2
+</td>
+<td style="text-align:left;">
+16.6
+</td>
+<td style="text-align:left;">
+0.0
+</td>
+<td style="text-align:left;">
+4.8
+</td>
+<td style="text-align:left;">
+0.5
+</td>
+</tr>
+</tbody>
+</table>
+
+- Analyzing Faculty (Fulltime only) data
+
+``` r
+tempData3 <- drop.levels(tempData2[tempData2$Group=="Faculty",],reorder=FALSE)
+tableRace.Fac = reshape2::dcast(tempData3, Year ~ Attribute, value.var = "Count")
+
+# double checking the total is accurate
+tableRace.Fac$sum = tableRace.Fac$White + tableRace.Fac$Hispanic + tableRace.Fac$Black + tableRace.Fac$`Asian or Pacific Islander` + tableRace.Fac$`American Indian or Native American` + tableRace.Fac$`Italian American` + tableRace.Fac$`Two or More Races`
+tableRace.Fac[,c("Year", "sum")]
+```
+
+    ##   Year sum
+    ## 1 2020 383
+    ## 2 2021 362
+    ## 3 2022 375
+
+``` r
+tableRaceNew.Fac = tableRace.Fac[,c("Year", "White","Hispanic","Black","Asian or Pacific Islander","American Indian or Native American","Italian American","Two or More Races","sum")]
+
+# print the table in HTML
+tableRaceNew.Fac %>% knitr::kable("html") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+<table class="table table-striped table-hover table-condensed" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Year
+</th>
+<th style="text-align:right;">
+White
+</th>
+<th style="text-align:right;">
+Hispanic
+</th>
+<th style="text-align:right;">
+Black
+</th>
+<th style="text-align:right;">
+Asian or Pacific Islander
+</th>
+<th style="text-align:right;">
+American Indian or Native American
+</th>
+<th style="text-align:right;">
+Italian American
+</th>
+<th style="text-align:right;">
+Two or More Races
+</th>
+<th style="text-align:right;">
+sum
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2020
+</td>
+<td style="text-align:right;">
+196
+</td>
+<td style="text-align:right;">
+43
+</td>
+<td style="text-align:right;">
+52
+</td>
+<td style="text-align:right;">
+71
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+19
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+383
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2021
+</td>
+<td style="text-align:right;">
+181
+</td>
+<td style="text-align:right;">
+42
+</td>
+<td style="text-align:right;">
+51
+</td>
+<td style="text-align:right;">
+69
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+18
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+362
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2022
+</td>
+<td style="text-align:right;">
+188
+</td>
+<td style="text-align:right;">
+49
+</td>
+<td style="text-align:right;">
+49
+</td>
+<td style="text-align:right;">
+69
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+19
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+375
+</td>
+</tr>
+</tbody>
+</table>
+
+``` r
+# calculating the proportion table
+tableRaceProportion.Fac = cbind(levels(tableRaceNew.Fac[,"Year"]),format(prop.table(data.matrix(tableRaceNew.Fac[,c("White","Hispanic","Black","Asian or Pacific Islander","American Indian or Native American","Italian American","Two or More Races")]),margin = 1)*100, digits=1))
+tableRaceProportion.Fac = as.data.table(tableRaceProportion.Fac)
+tableRaceProportion.Fac %>% knitr::kable("html") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+<table class="table table-striped table-hover table-condensed" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+V1
+</th>
+<th style="text-align:left;">
+White
+</th>
+<th style="text-align:left;">
+Hispanic
+</th>
+<th style="text-align:left;">
+Black
+</th>
+<th style="text-align:left;">
+Asian or Pacific Islander
+</th>
+<th style="text-align:left;">
+American Indian or Native American
+</th>
+<th style="text-align:left;">
+Italian American
+</th>
+<th style="text-align:left;">
+Two or More Races
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2020
+</td>
+<td style="text-align:left;">
+51.2
+</td>
+<td style="text-align:left;">
+11.2
+</td>
+<td style="text-align:left;">
+13.6
+</td>
+<td style="text-align:left;">
+18.5
+</td>
+<td style="text-align:left;">
+0.0
+</td>
+<td style="text-align:left;">
+5.0
+</td>
+<td style="text-align:left;">
+0.5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2021
+</td>
+<td style="text-align:left;">
+50.0
+</td>
+<td style="text-align:left;">
+11.6
+</td>
+<td style="text-align:left;">
+14.1
+</td>
+<td style="text-align:left;">
+19.1
+</td>
+<td style="text-align:left;">
+0.0
+</td>
+<td style="text-align:left;">
+5.0
+</td>
+<td style="text-align:left;">
+0.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2022
+</td>
+<td style="text-align:left;">
+50.1
+</td>
+<td style="text-align:left;">
+13.1
+</td>
+<td style="text-align:left;">
+13.1
+</td>
+<td style="text-align:left;">
+18.4
+</td>
+<td style="text-align:left;">
+0.0
+</td>
+<td style="text-align:left;">
+5.1
+</td>
+<td style="text-align:left;">
+0.3
+</td>
+</tr>
+</tbody>
+</table>
+
+- Analyzing HEO (Fulltime only) data
+
+``` r
+tempData3 <- drop.levels(tempData2[tempData2$Group=="HEO",],reorder=FALSE)
+tableRace.HEO = reshape2::dcast(tempData3, Year ~ Attribute, value.var = "Count")
+
+# double checking the total is accurate
+tableRace.HEO$sum = tableRace.HEO$White + tableRace.HEO$Hispanic + tableRace.HEO$Black + tableRace.HEO$`Asian or Pacific Islander` + tableRace.HEO$`American Indian or Native American` + tableRace.HEO$`Italian American` + tableRace.HEO$`Two or More Races`
+tableRace.HEO[,c("Year", "sum")]
+```
+
+    ##   Year sum
+    ## 1 2020 348
+    ## 2 2021 324
+    ## 3 2022 303
+
+``` r
+tableRaceNew.HEO = tableRace.HEO[,c("Year", "White","Hispanic","Black","Asian or Pacific Islander","American Indian or Native American","Italian American","Two or More Races","sum")]
+
+# print the table in HTML
+tableRaceNew.HEO %>% knitr::kable("html") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+<table class="table table-striped table-hover table-condensed" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Year
+</th>
+<th style="text-align:right;">
+White
+</th>
+<th style="text-align:right;">
+Hispanic
+</th>
+<th style="text-align:right;">
+Black
+</th>
+<th style="text-align:right;">
+Asian or Pacific Islander
+</th>
+<th style="text-align:right;">
+American Indian or Native American
+</th>
+<th style="text-align:right;">
+Italian American
+</th>
+<th style="text-align:right;">
+Two or More Races
+</th>
+<th style="text-align:right;">
+sum
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2020
+</td>
+<td style="text-align:right;">
+87
+</td>
+<td style="text-align:right;">
+102
+</td>
+<td style="text-align:right;">
+91
+</td>
+<td style="text-align:right;">
+53
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+348
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2021
+</td>
+<td style="text-align:right;">
+81
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:right;">
+79
+</td>
+<td style="text-align:right;">
+49
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+324
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2022
+</td>
+<td style="text-align:right;">
+70
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:right;">
+77
+</td>
+<td style="text-align:right;">
+43
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+303
+</td>
+</tr>
+</tbody>
+</table>
+
+``` r
+# calculating the proportion table
+tableRaceProportion.HEO = cbind(levels(tableRaceNew.HEO[,"Year"]),format(prop.table(data.matrix(tableRaceNew.HEO[,c("White","Hispanic","Black","Asian or Pacific Islander","American Indian or Native American","Italian American","Two or More Races")]),margin = 1)*100, digits=1))
+tableRaceProportion.HEO = as.data.table(tableRaceProportion.HEO)
+tableRaceProportion.HEO %>% knitr::kable("html") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+<table class="table table-striped table-hover table-condensed" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+V1
+</th>
+<th style="text-align:left;">
+White
+</th>
+<th style="text-align:left;">
+Hispanic
+</th>
+<th style="text-align:left;">
+Black
+</th>
+<th style="text-align:left;">
+Asian or Pacific Islander
+</th>
+<th style="text-align:left;">
+American Indian or Native American
+</th>
+<th style="text-align:left;">
+Italian American
+</th>
+<th style="text-align:left;">
+Two or More Races
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2020
+</td>
+<td style="text-align:left;">
+25.0
+</td>
+<td style="text-align:left;">
+29.3
+</td>
+<td style="text-align:left;">
+26.1
+</td>
+<td style="text-align:left;">
+15.2
+</td>
+<td style="text-align:left;">
+0.0
+</td>
+<td style="text-align:left;">
+3.4
+</td>
+<td style="text-align:left;">
+0.9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2021
+</td>
+<td style="text-align:left;">
+25.0
+</td>
+<td style="text-align:left;">
+30.9
+</td>
+<td style="text-align:left;">
+24.4
+</td>
+<td style="text-align:left;">
+15.1
+</td>
+<td style="text-align:left;">
+0.0
+</td>
+<td style="text-align:left;">
+3.4
+</td>
+<td style="text-align:left;">
+1.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2022
+</td>
+<td style="text-align:left;">
+23.1
+</td>
+<td style="text-align:left;">
+33.0
+</td>
+<td style="text-align:left;">
+25.4
+</td>
+<td style="text-align:left;">
+14.2
+</td>
+<td style="text-align:left;">
+0.0
+</td>
+<td style="text-align:left;">
+3.6
+</td>
+<td style="text-align:left;">
+0.7
+</td>
+</tr>
+</tbody>
+</table>
